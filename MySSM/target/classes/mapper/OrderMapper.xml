@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="OrderMapper">
+	<!-- 查询所有订单 -->
+	<select id="selAllOrder" resultType="Map">
+		select * from torder where
+		isdel=0
+	</select>
+
+	<!-- 查询未被接单的订单 -->
+	<select id="selUnansweredOrder" resultType="Map">
+		select * from torder
+		where chref is null
+	</select>
+
+	<!-- 查询删除的订单 -->
+	<select id="selAllISDelOrder" resultType="Map">
+		select * from torder
+		where isdel=1
+	</select>
+
+	<!-- 新增一个订单 -->
+	<insert id="addOneOrder">
+		insert into torder
+		<trim prefix="(" prefixOverrides="," suffix=")">
+			<if test="torderid!=null and torderid!=''">torderid</if>
+			<if test="tableid!=null and tableid!=''">,tableid</if>
+			<if test="foodlist!=null and foodlist!=''">,foodlist</if>
+			<if test="tordertime!=null and tordertime!=''">,tordertime</if>
+			<if test="allmoney!=null and allmoney!=''">,allmoney</if>
+			<if test="isdel!=null and isdel!=''">,isdel</if>
+			<if test="chref!=null and chref!=''">,chref</if>
+			<if test="ispay!=null and ispay!=''">,ispay</if>
+		</trim>
+
+		<trim prefix="values (" prefixOverrides="," suffix=")">
+			<if test="torderid!=null and torderid!=''">#{torderid}</if>
+			<if test="tableid!=null and tableid!=''">,#{tableid}</if>
+			<if test="foodlist!=null and foodlist!=''">,#{foodlist}</if>
+			<if test="tordertime!=null and tordertime!=''">,#{tordertime}</if>
+			<if test="allmoney!=null and allmoney!=''">,#{allmoney}</if>
+			<if test="isdel!=null and isdel!=''">,#{isdel}</if>
+			<if test="chref!=null and chref!=''">,#{chref}</if>
+			<if test="ispay!=null and ispay!=''">,#{ispay}</if>
+		</trim>
+	</insert>
+
+	<!-- 后台分页模糊查询所有订单 -->
+	<select id="selAllOrderInfo" parameterType="Map" resultType="Map">
+		select * from
+		(select TORDER.*,rownum a from TORDER where
+		rownum&lt;=#{page}*#{limit}
+		<trim prefix="and" prefixOverrides="or">
+			<if test="torderid!=null and torderid!=''">torderid like #{torderid}</if>
+			<if test="tableid!=null and tableid!=''">or tableid like #{tableid}</if>
+			<if test="tordertime!=null and tordertime!=''">or tordertime like #{tordertime}</if>
+			<if test="allmoney!=null and allmoney!=''">or allmoney like #{allmoney}</if>
+			<if test="statu!=null and statu!=''">or ispay like #{statu}</if>
+		</trim>
+		)
+		where a&gt;(#{page}-1)*#{limit}
+	</select>
+
+	<!-- 删除一个订单通过id -->
+	<update id="delOneOrderById" parameterType="String">
+		<if test="_parameter!=null and _parameter!=''">update torder set isdel=1 where torderid=#{_parameter}
+		</if>
+	</update>
+
+	<!-- 删除一个订单通过id -->
+	<update id="recoveryOneOrderById" parameterType="String">
+		<if test="_parameter!=null and _parameter!=''">update torder set isdel=0 where torderid=#{_parameter}
+		</if>
+	</update>
+
+	<!-- 结账 -->
+	<update id="overOneOrderById" parameterType="Map">
+		<if test="ispay!=null and ispay!=''">
+			<if test="torderid!=null and torderid!=''">
+				update torder set ispay=#{ispay} where
+				torderid=#{torderid}
+			</if>
+		</if>
+	</update>
+
+	<!-- 查询我的接单 -->
+	<select id="selMyOrder" parameterType="String" resultType="Map">
+		<if test="_parameter!=null and _parameter!=''">select * from torder where chref=#{_parameter}</if>
+	</select>
+	<!-- 接桌 -->
+	<update id="jiezhuo" parameterType="Map">
+		<if test="chref!=null and chref!=''">
+			<if test="torderid!=null and torderid!=''">
+				update torder set chref=#{chref} where torderid=#{torderid}
+			</if>
+		</if>
+	</update>
+
+</mapper>

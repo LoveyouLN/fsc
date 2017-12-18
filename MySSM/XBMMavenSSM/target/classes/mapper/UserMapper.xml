@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserMapper">
+
+	<!-- 登录 -->
+	<select id="checkUser" parameterType="user" resultType="Map">
+		select
+		tuser.*,trole.rolename,trole.roleid,trole.roledesc from tuser
+		join tuserrole
+		on tuserrole.userid=tuser.userid
+		join trole on
+		tuserrole.roleid=TROLE.ROLEID
+		<where>
+			<trim prefixOverrides="and">
+				<if test="username!=null">tuser.username=#{username}</if>
+				<if test="userpsw!=null">and tuser.userpsw=#{userpsw}</if>
+			</trim>
+		</where>
+	</select>
+	
+		<!-- 查询一个用户根据id -->
+	<select id="selOneUserByName" parameterType="user" resultType="Map">
+		select * from tuser 
+	<where>
+	<trim prefixOverrides="and">
+	<if test="userid!=null">userid=#{userid}</if>
+	<if test="username!=null">and username=#{username}</if>
+	<if test="userpsw!=null">and userpsw=#{userpsw}</if>
+	<if test="userrealname!=null">and userrealname=#{userrealname}</if>
+	</trim>
+	</where> 
+	</select>
+
+	<!-- 查询一个用户根据id -->
+	<select id="selOneUserById" parameterType="String" resultType="Map">
+		<if test="_parameter!=null">select * from tuser where userid=#{_parameter}</if>
+	</select>
+
+	<!-- 增加一个用户 -->
+	<insert id="addOneUser" parameterType="Map" >
+		<selectKey keyProperty="userid" resultType="string" order="BEFORE">
+			select userid from (select tuser.*,rownum from tuser order by (userid+0)
+			desc) where
+			rownum=1
+		</selectKey>
+		insert into tuser
+		<if test="username!=null and username!=''">
+			<if test="userpsw!=null and userpsw!=''">
+				<if test="userrealname!=null and userrealname!=''">
+					<if test="isdel!=null and isdel!=''">
+							(userid,username,userpsw,userrealname,isdel)
+							values(#{userid,jdbcType=VARCHAR}+1,#{username},#{userpsw},#{userrealname},#{isdel})
+					</if>
+				</if>
+			</if>
+		</if>
+	</insert>
+
+	<!-- 修改一个用户 -->
+	<update id="updOneUser" parameterType="Map">
+		update tuser
+		<set>
+			<trim prefixOverrides=",">
+				<if test="username!=null and username!=''">username=#{username}</if>
+				<if test="userpsw!=null and userpsw!=''">,userpsw=#{userpsw}</if>
+				<if test="userrealname!=null and userrealname!=''">,userrealname=#{userrealname}</if>
+				<if test="isdel!=null and isdel!=''">,isdel=#{isdel}</if>
+				<if test="useraddress!=null and useraddress!=''">,useraddress=#{useraddress}</if>
+			</trim>
+		</set>
+		<where>
+			<if test="userid!=null and userid!=''">userid=#{userid}</if>
+		</where>
+	</update>
+
+	<!-- 修改一个用户角色 -->
+	<update id="updOneUserRole" parameterType="Map">
+		update TUSERROLE
+		<set>
+			roleid=#{roleid}
+		</set>
+		<where>
+			userid=#{userid}
+		</where>
+	</update>
+	
+	<!-- 增加一个用户并赋予角色 -->
+	<insert id="addOneUserRole" parameterType="Map">
+	<selectKey keyProperty="tuserroleid" resultType="string"  order="BEFORE">
+		select TUSERROLEid from (select TUSERROLE.*,rownum from TUSERROLE order by (TUSERROLEid+0)
+			desc) where
+			rownum=1
+	</selectKey>
+		insert into  TUSERROLE
+		<if test="userid!=null and userid!=''">
+		<if test="roleid!=null and roleid!=''">
+		<trim prefix="(" prefixOverrides=","  suffix=")">
+			tuserroleid,userid,roleid
+		</trim>
+		values
+		<trim prefix="(" prefixOverrides=","  suffix=")">
+			#{tuserroleid}+1,#{userid},#{roleid}
+		</trim>
+		</if>
+		</if>
+	</insert>
+	<!-- 逻辑删除一个用户 -->
+	<update id="delOneUser" parameterType="Map">
+		update tuser
+		<set>
+			<if test="isdel!=null and isdel!=''">isdel=#{isdel}</if>
+		</set>
+		<where>
+			<if test="userid!=null and userid!=''">userid=#{userid}</if>
+		</where>
+	</update>
+
+	<!-- 分页模糊查询 -->
+	<select id="pageUser" parameterType="Map" resultType="Map">
+		select *
+		from
+		(select tuser.*,trole.*,rownum a from tuser
+		join tuserrole on
+		tuserrole.userid=tuser.userid
+		join trole on tuserrole.roleid=trole.roleid where
+		<trim prefixOverrides="and">
+			<trim prefixOverrides="or">
+				<if test="id!=null and id!='%null%' and id!='%%'">tuser.userid like #{id}</if>
+				<if test="name!=null and name!='%null%' and name!='%%'">or tuser.username like #{name}</if>
+				<if test="psw!=null and psw!='%null%' and psw!='%%'">or tuser.userpsw like #{psw}</if>
+				<if test="realname!=null and realname!='%null%' and realname!='%%'">or tuser.userrealname like #{realname}</if>
+				and rownum &lt;=#{page}*#{limit}) t
+			</trim>
+		</trim>
+		where t.a &gt;(#{page}-1)*#{limit}
+	</select>
+	
+	<!-- 查询所有未删除用户的数量 -->
+	<select id="selAllUserCount" resultType="Map">
+		select count(*) from tuser 
+	</select>
+	
+	<!-- excel -->
+	<select id="ouputExcel" resultType="Map">
+		select * from tuser 
+	</select>
+	
+	<!-- 查询所有身份 -->
+	<select id="selAllRole" resultType="Map">
+		select * from trole
+	</select>
+	
+
+</mapper>

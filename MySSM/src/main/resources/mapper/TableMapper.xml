@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TableMapper">
+
+	<!-- 查询所有桌子信息 -->
+	<select id="selAllTable" resultType="Map">
+		select * from mytable
+	</select>
+
+	<!-- 后台分页模糊查询桌子信息 -->
+	<select id="selAllTableInfo" resultType="Map">
+		select * from (select mytable.*,rownum r from mytable
+		where
+		<trim prefixOverrides="and">
+			<if test="tableid!=null and tableid!='%null%'">mytable.mytableid like #{tableid}</if>
+			<if test="tablename!=null and tablename!='%null%'">and mytable.mytablename like #{tablename}</if>
+			<if test="tablesta!=null and tablesta!='%null%'"> and mytable.isuse like #{tablesta}</if>
+			and rownum &lt;=#{page}*#{limit})
+		</trim>
+		where r&gt;(#{page}-1)*#{limit}
+	</select>
+
+	<!-- 修改一个桌子信息 -->
+	<update id="updOneTable" parameterType="Map">
+		update MYTABLE
+		<set>
+			<trim prefixOverrides=",">
+				<if test="mytableid!=null and mytableid!=''">
+					<if test="mytablename!=null and mytablename!=''">mytablename=#{mytablename}</if>
+					<if test="isdel!=null and isdel!=''">,isdel=#{isdel}</if>
+					<if test="isuse!=null and isuse!=''">,isuse=#{isuse}</if>
+					<if test="howmoney!=null and howmoney!=''">,howmoney=#{howmoney}</if>
+					<where>
+						mytableid=#{mytableid}
+					</where>
+				</if>
+			</trim>
+		</set>
+	</update>
+
+	<!-- 逻辑删除一个桌子信息 -->
+	<update id="delOneTable" parameterType="Map">
+		update MYTABLE
+		<set>
+			<if test="isdel!=null and isdel!=''">isdel=#{isdel}</if>
+		</set>
+		<where>
+			<if test="mytableid!=null and mytableid!=''">mytableid=#{mytableid}</if>
+		</where>
+	</update>
+
+	<!-- 新增一个桌子 -->
+	<insert id="addOneTable" parameterType="Map">
+		insert into mytable
+		<trim prefix="(" prefixOverrides="," suffix=")">
+
+			<if test="mytableid!=null">mytableid</if>
+			<if test="mytablename!=null">,mytablename</if>
+			<if test="isdel!=null">,isdel</if>
+			<if test="isuse!=null">,isuse</if>
+			<if test="howmoney!=null">,howmoney</if>
+		</trim>
+		values
+		<trim prefix="(" prefixOverrides="," suffix=")">
+			<if test="mytableid!=null">#{mytableid}</if>
+			<if test="mytablename!=null">,#{mytablename}</if>
+			<if test="isdel!=null">,#{isdel}</if>
+			<if test="isuse!=null">,#{isuse}</if>
+			<if test="howmoney!=null">,#{howmoney}</if>
+		</trim>
+	</insert>
+
+	<!-- 查询一个桌子信息 -->
+	<select id="selOneTableInfo" parameterType="Map" resultType="Map">
+		select * from mytable
+		<where>
+			<trim prefixOverrides="and">
+				<if test="mytableid!=null and mytableid!=''">mytableid=#{mytableid}</if>
+				<if test="mytablename!=null and mytablename!=''">and mytablename=#{mytablename}</if>
+				<if test="isdel!=null and isdel!=''">and isdel=#{isdel}</if>
+				<if test="isuse!=null and isuse!=''">and isuse=#{isuse}</if>
+				<if test="howmoney!=null and howmoney!=''">and howmoney=#{howmoney}</if>
+			</trim>
+		</where>
+	</select>
+
+	<!-- 修改一个桌子状态 -->
+	<update id="updOneTableState" parameterType="Map">
+		<if test="isuse!=null and isuse!=''">
+			<if test="howmoney!=null and howmoney!=''">
+				<if test="mytableid!=null and mytableid!=''">
+				update mytable set isuse=#{isuse},howmoney=#{howmoney} where
+		mytableid=#{mytableid}
+				</if>
+			</if>
+		</if>
+		
+	</update>
+</mapper>

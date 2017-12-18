@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<typeAliases>
+		<typeAlias type="com.org.fsc.ssh.bean.User" alias="user" />
+		<typeAlias type="com.org.fsc.ssh.bean.Page" alias="page" />
+	</typeAliases>
+
+<!-- mybais插件 -->
+	<plugins>
+		<plugin interceptor="com.org.fsc.interceptor.MyBatiesInterceptor">
+			<property name="dialect" value="oracle" />
+		</plugin>
+	</plugins>
+
+	<!-- 映射文件，mybatis核心 -->
+	<mappers>
+		<mapper resource="mapper/UserMapper.xml" />
+		<mapper resource="mapper/MenuMapper.xml" />
+		<mapper resource="mapper/FoodMapper.xml" />
+		<mapper resource="mapper/TableMapper.xml" />
+		<mapper resource="mapper/OrderMapper.xml" />
+		<mapper resource="mapper/MyWxMapper.xml" />
+	</mappers>
+
+
+</configuration>
